@@ -1,3 +1,5 @@
+#file used for creating first time data and data bases for new users
+
 from web3 import Web3, Account
 import secrets
 
