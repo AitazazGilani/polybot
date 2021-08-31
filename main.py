@@ -1,31 +1,51 @@
 import discord
-from web3 import Web3
-import setup as S
-client = discord.Client()
+from discord.ext import commands
 
-url = "https://rpc-mainnet.maticvigil.com/v1/b20459a39192d4978e017db439b3a37d314059ae"
-web3 = Web3(Web3.HTTPProvider(url))
+import setup as S
+import network as n
+client = commands.Bot(command_prefix='!')
+
 
 @client.event
 async def on_ready():
     print('We have logged in as {0.user}'.format(client))
 
-@client.event
-async def on_message(message):
-    if message.author == client.user:
-        return
 
-    if message.content.startswith('$ping'):
-        await message.channel.send('Pong')
+@client.command()
+async def ping(ctx):
+    await ctx.send("Pong!")
 
-    if message.content.startswith('$web3 polygon status'):
-        test = web3.isConnected()
+@client.command()
+async def web3(ctx,arg):
+    if arg == 'status':
+        test = n.test_connection()
         if test == True:
-            await message.channel.send('Live!')
+            await ctx.send("Live!")
         else:
-            await message.channel.send('Connection offline')
+            await ctx.send("Offline")
 
-    if message.content.startswith('$generate wallet'):
-        account1 = S.create_account()
-        await message.channel.send(str(account1.address))
+
+@client.command()
+async def generate(ctx,arg):
+    if arg == 'wallet':
+        acc = S.create_account() #need to make a data base for the user here
+        await ctx.send(acc.address)
+
+@client.command()
+async def get(ctx,*args):
+    if args[0] == 'balance':
+        user_adr = str(args[1]) #holds wallet address
+        # check if wallet is correct
+        check = n.check_addr(user_adr)
+        if check == True:
+            balance = n.get_bal(user_adr)
+            await ctx.send(str(balance) + " MATIC")
+        else:
+            await ctx.send("address not found")
+
+
+
+
+
+
 client.run('ODU1MjI1MDUzMDIwNTUzMjM2.YMvYZQ.VaBz5KJ2bn4-ignx0ilGJgdK17k')
