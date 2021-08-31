@@ -22,7 +22,7 @@ def check_addr(addr):
     :param addr: a string
     :return: bool
     '''
-    assert type(addr) == "<class 'str'>"
+    #assert type(addr) == "<class 'str'>"
     return web3.isAddress(addr)
 
 def get_bal(addr):
@@ -32,5 +32,5 @@ def get_bal(addr):
     :return: a float
     '''
     bals = web3.eth.get_balance(addr)
-    bals = web3.toWei(bals)
+    bals = web3.fromWei(bals,'ether')
     return bals
