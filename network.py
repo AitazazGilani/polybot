@@ -35,8 +35,27 @@ def get_bal(addr):
     bals = web3.fromWei(bals,'ether')
     return bals
 
-def create_transaction():
-    return None
+class transaction(object):
+    def __init__(self,nonce=None,addr=None,value=None,gas=2000000,gasPrice=None):
+        self.nonce = nonce
+        self.addr = addr
+        self.value = value
+        self.gas = gas
+        self.gasPrice = gasPrice
 
+    def create_dict(self):
 
+        tx = {
+            'nonce' : self.nonce,
+            'to': self.addr,
+            'value': web3.toWei(self.value,'ether'),
+            'gas': self.gas,
+            'gasPrice': self.gasPrice
+
+        }
+        return tx
+
+    def sign_transaction(self , tx ,account):
+        signed_tx = web3.eth.account.sign_transaction(tx,account.privatekey())
+        return signed_tx
 

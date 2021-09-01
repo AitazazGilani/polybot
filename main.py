@@ -39,11 +39,12 @@ async def get(ctx,*args):
         check = n.check_addr(user_adr)
         if check == True:
             balance = n.get_bal(user_adr)
-            await ctx.send(str(balance) + " MATIC")
+            await ctx.send(str(balance) + " ETH")
         else:
             await ctx.send("address not found")
 
-
+@client.command()
+async def send(ctx,*args):
 
 
 
