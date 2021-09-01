@@ -55,7 +55,7 @@ class transaction(object):
         }
         return tx
 
-    def sign_transaction(self , tx ,account):
-        signed_tx = web3.eth.account.sign_transaction(tx,account.privatekey())
+    def sign_transaction(self , tx ,priv):
+        signed_tx = web3.eth.account.sign_transaction(tx,priv)
         return signed_tx
 
