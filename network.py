@@ -6,9 +6,9 @@
 import json
 from web3 import Web3
 
-url = "https://rpc-mainnet.maticvigil.com/v1/b20459a39192d4978e017db439b3a37d314059ae"
+url = "HTTP://127.0.0.1:7545"
+    #"https://rpc-mainnet.maticvigil.com/v1/b20459a39192d4978e017db439b3a37d314059ae"
 web3 = Web3(Web3.HTTPProvider(url))
-bals = web3.eth.get_balance("0x8582852FF2F369883349a7e778B7eC120C15AeFE")
 
 def test_connection():
     '''
@@ -34,3 +34,9 @@ def get_bal(addr):
     bals = web3.eth.get_balance(addr)
     bals = web3.fromWei(bals,'ether')
     return bals
+
+def create_transaction():
+    return None
+
+
+
