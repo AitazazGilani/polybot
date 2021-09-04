@@ -42,9 +42,39 @@ async def get(ctx,*args):
             await ctx.send(str(balance) + " ETH")
         else:
             await ctx.send("address not found")
-
+#!send value addr1 privkey(addr1) addr2
 @client.command()
 async def send(ctx,*args):
+    value = args[0]
+    try: #check if given value is a number
+        value = float(value)
+    except:
+        await ctx.send("invalid amount of eth to be transacted")
+    addr_1 = args[1]
+    priv = args[2]
+    addr_2 = args[3]
+
+    if (n.check_addr(addr_1) == False) or (n.check_addr(addr_2) == False) :
+        await ctx.send("invalid address given")
+
+    if n.get_bal(addr_1) < value:
+        await ctx.send("insufficient balance")
+
+    tx = n.transaction()
+    tx.addrA = addr_1
+    tx.addrB = addr_2
+    tx.value = value
+    tx.gasPrice = 20000000000
+    tx_data = tx.create_dict()
+    tx_signed = tx.sign_transaction(tx_data,priv)
+    tx_hashed = tx.ex_rawTx(tx_signed)
+
+    tx_confirm = tx.hex_tx(tx_hashed)
+
+    await ctx.send("Transactions successful\n Contract Address: " + tx_confirm)
+
+
+
 
 
 

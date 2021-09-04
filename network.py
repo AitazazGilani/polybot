@@ -50,7 +50,7 @@ class transaction(object):
             'to': self.addrB,
             'value': web3.toWei(self.value,'ether'),
             'gas': self.gas,
-            'gasPrice': self.gasPrice
+            'gasPrice': web3.toWei('50','gwei')
 
         }
         return tx
@@ -63,4 +63,6 @@ class transaction(object):
         tx_hash = web3.eth.sendRawTransaction(signedTx.rawTransaction)
         return tx_hash
 
+    def hex_tx(self,hashed_tx):
+        return web3.toHex(hashed_tx)
 
