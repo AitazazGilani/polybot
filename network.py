@@ -36,9 +36,9 @@ def get_bal(addr):
     return bals
 
 class transaction(object):
-    def __init__(self,nonce=None,addr=None,value=None,gas=2000000,gasPrice=None):
-        self.nonce = nonce
-        self.addr = addr
+    def __init__(self,addrA=None,addrB=None,value=0,gas=6721975,gasPrice=None):
+        self.addrA = addrA #account we are sending money from
+        self.addrB = addrB
         self.value = value
         self.gas = gas
         self.gasPrice = gasPrice
@@ -46,8 +46,8 @@ class transaction(object):
     def create_dict(self):
 
         tx = {
-            'nonce' : self.nonce,
-            'to': self.addr,
+            'nonce' : web3.eth.getTransactionCount(self.addrA),
+            'to': self.addrB,
             'value': web3.toWei(self.value,'ether'),
             'gas': self.gas,
             'gasPrice': self.gasPrice
@@ -58,4 +58,9 @@ class transaction(object):
     def sign_transaction(self , tx ,priv):
         signed_tx = web3.eth.account.sign_transaction(tx,priv)
         return signed_tx
+
+    def ex_rawTx(self,signedTx):
+        tx_hash = web3.eth.sendRawTransaction(signedTx.rawTransaction)
+        return tx_hash
+
 
