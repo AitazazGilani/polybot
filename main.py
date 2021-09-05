@@ -4,7 +4,7 @@ from discord.ext import commands
 import setup as S
 import network as n
 client = commands.Bot(command_prefix='!')
-#S.create_db()
+S.create_db()
 
 @client.event
 async def on_ready():
@@ -51,34 +51,47 @@ async def get(ctx,*args):
 #!send value ticker addr1 privkey(addr1) addr2
 #!send value ticker @username
 @client.command()
-async def send(ctx,*args):
-    value = args[0]
-    try: #check if given value is a number
-        value = float(value)
+async def send(ctx,arg1,arg2,*,user: discord.User=None):
+    val = arg1
+    ticker = arg2
+    recipient = user.id
+
+    try:
+        val = float(val)
     except:
-        await ctx.send("invalid amount of COOM to be transacted")
-    addr_1 = args[2]
-    priv = args[3]
-    addr_2 = args[4]
+        await ctx.send("invalid amount of coom given")
 
-    if (n.check_addr(addr_1) == False) or (n.check_addr(addr_2) == False) :
-        await ctx.send("invalid address given")
+    ticker = ticker.upper()
+    if ticker != "COOM":
+        ctx.send("invalid ticker")
 
-    if n.get_bal(addr_1) < value:
-        await ctx.send("insufficient balance")
+    recep_info = S.fetch_user(recipient)
+    donor_info = S.fetch_user(ctx.author.id)
+    if recep_info == []:
+        ctx.send("Given user does not have a wallet created")
+    if donor_info == []:
+        ctx.send("You do not have a wallet created")
+
+
+
+    addressA = donor_info[1]
+    pkeyA = donor_info[2]
+    addressB = recep_info[1]
 
     tx = n.transaction()
-    tx.addrA = addr_1
-    tx.addrB = addr_2
-    tx.value = value
+    tx.addrA = addressA
+    tx.addrB = addressB
+    tx.value = val
     tx.gasPrice = 20000000000
     tx_data = tx.create_dict()
-    tx_signed = tx.sign_transaction(tx_data,priv)
+    tx_signed = tx.sign_transaction(tx_data,pkeyA)
     tx_hashed = tx.ex_rawTx(tx_signed)
 
     tx_confirm = tx.hex_tx(tx_hashed)
 
-    await ctx.send("Transactions successful\n Contract Address: " + tx_confirm)
+    await ctx.send(f"Transaction successful \n Contract created at {tx_confirm}")
+    #await ctx.send(f'{user.id}, {arg1},{arg2}')
+
 
 @client.command()
 async def user(ctx):
