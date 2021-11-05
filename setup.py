@@ -15,6 +15,10 @@ def create_account():
     acct = Account.from_key(private_key)
     return acct
 
+def to_hex(priv):
+    return Web3.toHex(priv)
+
+
 def check_db():
     '''
     check if a database exists
@@ -48,7 +52,6 @@ def add_user(username,addr,priv):
     '''
     conn = sqlite3.connect('wallet_base.db')
     c = conn.cursor()
-
     c.execute("INSERT INTO users VALUES ('{}','{}','{}')".format(username,addr,priv))
     conn.commit()
     conn.close()

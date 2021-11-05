@@ -26,19 +26,18 @@ async def web3(ctx,arg):
 
 
 @client.command()
-async def generate(ctx,arg):
-    if arg == 'wallet':
-        acc = S.create_account()
-        if S.fetch_user(ctx.author.id) == []:
-            S.add_user(ctx.author.id,acc.address,acc.privateKey)
-            await ctx.send("your address:",acc.address)
-        else:
-            await ctx.send("your wallet has already been created")
+async def generate(ctx):
+    acc = S.create_account()
+    if S.fetch_user(ctx.author.id) == []:
+        S.add_user(ctx.author.id,acc.address,S.to_hex(acc.privateKey))
+        await ctx.send("your address: "+ str(acc.address))
+    else:
+        await ctx.send("your wallet has already been created")
 
 @client.command()
 async def get(ctx,*args):
     if args[0] == 'balance':
-        user = S.fetch_user(ctx.author.id) #holds wallet address
+        user = S.fetch_user(ctx.author.id)[0] #holds wallet address
         # check if wallet is correct
         check = user
         if check == []:
@@ -46,6 +45,10 @@ async def get(ctx,*args):
         else:
             balance = n.get_bal(user[1])
             await ctx.send('{} {}'.format(balance,'COOM'))
+    if args[0] == 'address':
+        user = S.fetch_user(ctx.author.id)[0]
+        await ctx.send("Your address: " + str(user[1]))
+
 
 
 #!send value ticker addr1 privkey(addr1) addr2
@@ -57,7 +60,7 @@ async def send(ctx,arg1,arg2,*,user: discord.User=None):
     recipient = user.id
 
     try:
-        val = float(val)
+        val = int(val)
     except:
         await ctx.send("invalid amount of coom given")
 
@@ -72,24 +75,12 @@ async def send(ctx,arg1,arg2,*,user: discord.User=None):
     if donor_info == []:
         ctx.send("You do not have a wallet created")
 
-
-
     addressA = donor_info[1]
     pkeyA = donor_info[2]
     addressB = recep_info[1]
-
-    tx = n.transaction()
-    tx.addrA = addressA
-    tx.addrB = addressB
-    tx.value = val
-    tx.gasPrice = 20000000000
-    tx_data = tx.create_dict()
-    tx_signed = tx.sign_transaction(tx_data,pkeyA)
-    tx_hashed = tx.ex_rawTx(tx_signed)
-
-    tx_confirm = tx.hex_tx(tx_hashed)
-
-    await ctx.send(f"Transaction successful \n Contract created at {tx_confirm}")
+    user_txn = n.create_txn(addressA,addressB,val)
+    reciept = n.sign_txn(pkeyA,user_txn)
+    await ctx.send(f"Transaction reciept: {reciept}")
     #await ctx.send(f'{user.id}, {arg1},{arg2}')
 
 
