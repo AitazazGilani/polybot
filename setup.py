@@ -83,3 +83,13 @@ def delete_user(username):
     conn.commit()
     conn.close()
 
+def check_user(username):
+    '''
+    check if a particular user exists in the db
+    :return: True, if it exists, False otherwise
+    '''
+    check = fetch_user(username=username)
+    if check == []:
+        return False
+    else:
+        return True
