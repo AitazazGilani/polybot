@@ -38,55 +38,58 @@ async def generate(ctx):
 
 @client.command()
 async def get(ctx,*args):
-    user = S.fetch_user(ctx.author.id)  # holds wallet address
-    # check if wallet is correct
-    check = user
+    user = S.fetch_user(ctx.author.id)[0]  # holds uid,wallet address, privkey
+
+    check = S.check_user(ctx.author.id)  # check if wallet exists correct
+
     if args[0] == 'balance':
-        if check == []:
+        if check == False:
             await ctx.send("You do not have any active wallets")
         else:
-            balance = n.get_bal(user[0][1])
-            await ctx.send('<:coomer:881353486296580176> {} {}'.format(balance,'COOM'))
+            balance = n.get_bal(user[1])
+            await ctx.send('<:coomer:881353486296580176> {} {}'.format(balance[1],p.contract_ticker)
+                           +'\n<:polygon:906994678367391754> {} {}'.format(balance[0], p.native_ticker))
+
+
     elif (args[0] == 'address'):
-        if check!=[]:
-            user = S.fetch_user(ctx.author.id)
-            await ctx.send("Your address: " + str(user[0][1]))
+        if check == True:
+            await ctx.send("Your address: "+ str(user[1]))
         else:
             await ctx.send("You do not have any active wallets")
 
 
 
-#!send value ticker addr1 privkey(addr1) addr2
+
 #!send value ticker @username
 @client.command()
 async def send(ctx,arg1,arg2,*,user: discord.User=None):
-    val = arg1
-    ticker = arg2
-    recipient = user.id
+    val, ticker, recipient = arg1, arg2, user.id
 
     try:
         val = int(val)
     except:
-        await ctx.send("invalid amount of coom given")
+        await ctx.send("invalid amount given")
 
-    ticker = ticker.upper()
-    if ticker != "COOM":
+    if  ticker.upper() != "COOM":
         ctx.send("invalid ticker")
-
-    recep_info = S.fetch_user(recipient)
-    donor_info = S.fetch_user(ctx.author.id)
-
-    if recep_info == []:
-        await ctx.send("Given user does not have a wallet created")
-    elif donor_info == []:
-        await ctx.send("You do not have a wallet created")
     else:
-        addressA = donor_info[0][1]
-        pkeyA = donor_info[0][2]
-        addressB = recep_info[0][1]
-        user_txn = n.create_txn(addressA,addressB,val)
-        reciept = n.sign_txn(pkeyA,user_txn)
-        await ctx.send(f"Transaction reciept: https://polygonscan.com/tx/{reciept}")
+        if S.check_user(user.id) == False:
+            await ctx.send("Given user does not have a wallet created")
+        elif S.check_user(ctx.author.id) == False:
+            await ctx.send("You do not have a wallet created")
+        else:
+            recep_info = S.fetch_user(recipient)[0]
+            donor_info = S.fetch_user(ctx.author.id)[0]
+
+            addressA, privA = donor_info[1], donor_info[2]
+            addressB = recep_info[1]
+
+            reciept = n.pass_contract_txn(privA,addressA,addressB,val)
+
+            if (reciept[0] == True):
+                await ctx.send(f"Transaction reciept: https://polygonscan.com/tx/{reciept[1]}")
+            else:
+                await ctx.send(f"Transaction failed: {reciept[1]}")
 
 @client.command()
 async def user(ctx):
