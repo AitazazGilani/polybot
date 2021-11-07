@@ -29,9 +29,12 @@ def get_bal(addr):
     :return: a float
     '''
 
-    rawbals = contract.functions.balanceOf(addr).call()
-    bals = web3.fromWei(rawbals, "ether")
-    return bals
+    native_bal_raw = web3.eth.getBalance(addr)
+    native_balance = web3.fromWei(native_bal_raw, "ether")
+
+    contract_bal_raw = contract.functions.balanceOf(addr).call()
+    contract_balance = web3.fromWei(contract_bal_raw, "ether")
+    return native_balance,contract_balance
 
 def create_txn(sender, recipient, amount):
     '''
@@ -70,4 +73,19 @@ def sign_txn(priv_key, contract_txn):
     hashed_txn = web3.eth.send_raw_transaction(signed_txn.rawTransaction)
     return web3.toHex(hashed_txn)
 
+def pass_contract_txn(sender_priv,sender,recipient, amount):
+    '''
+    Fully passes a contract txn
+    :return: True, hased_txn if passed
+             False, error_message  if failed
+    '''
+    try:
+        contract_txn = create_txn(sender,recipient,amount)
+        try:
+            signed_txn = sign_txn(sender_priv,contract_txn)
+            return True,signed_txn
+        except Exception as e:
+            return False, e
 
+    except Exception as e:
+        return False, e
