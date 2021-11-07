@@ -5,7 +5,7 @@ import setup as S
 import network as n
 import parse_settings as p
 
-client = commands.Bot(command_prefix='!')
+client = commands.Bot(command_prefix='!',help_command=None)
 S.create_db()
 
 @client.event
@@ -46,7 +46,7 @@ async def get(ctx,*args):
             await ctx.send("You do not have any active wallets")
         else:
             balance = n.get_bal(user[0][1])
-            await ctx.send('{} {}'.format(balance,'COOM'))
+            await ctx.send('<:coomer:881353486296580176> {} {}'.format(balance,'COOM'))
     elif (args[0] == 'address'):
         if check!=[]:
             user = S.fetch_user(ctx.author.id)
@@ -111,5 +111,14 @@ async def make(ctx,*,user: discord.User=None):
     else:
         await ctx.send("command reserved for admins")
 
+@client.command()
+async def help(ctx):
+    await ctx.send("```Commands:\n!ping, replies with pong!\n"
+                   "!web3 status, checks if connection to the node is working\n"
+                   "!generate, creates an Ethereum wallet for the user who calls the command and stores it\n"
+                   "!get balance, get the balance of the contracts token for that user\n"
+                   "!get address, gets the users current Ethereum address\n"
+                   "!send <value> <ticker> @username, send a person an X amount of tokens from your wallet\n"
+                   "!help, replies with this text```")
 
 client.run(p.bot_id)
