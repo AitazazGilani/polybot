@@ -3,6 +3,8 @@ from discord.ext import commands
 
 import setup as S
 import network as n
+import parse_settings as p
+
 client = commands.Bot(command_prefix='!')
 S.create_db()
 
@@ -36,18 +38,21 @@ async def generate(ctx):
 
 @client.command()
 async def get(ctx,*args):
+    user = S.fetch_user(ctx.author.id)  # holds wallet address
+    # check if wallet is correct
+    check = user
     if args[0] == 'balance':
-        user = S.fetch_user(ctx.author.id)[0] #holds wallet address
-        # check if wallet is correct
-        check = user
         if check == []:
             await ctx.send("You do not have any active wallets")
         else:
-            balance = n.get_bal(user[1])
+            balance = n.get_bal(user[0][1])
             await ctx.send('{} {}'.format(balance,'COOM'))
-    if args[0] == 'address':
-        user = S.fetch_user(ctx.author.id)[0]
-        await ctx.send("Your address: " + str(user[1]))
+    elif (args[0] == 'address'):
+        if check!=[]:
+            user = S.fetch_user(ctx.author.id)
+            await ctx.send("Your address: " + str(user[0][1]))
+        else:
+            await ctx.send("You do not have any active wallets")
 
 
 
@@ -70,19 +75,18 @@ async def send(ctx,arg1,arg2,*,user: discord.User=None):
 
     recep_info = S.fetch_user(recipient)
     donor_info = S.fetch_user(ctx.author.id)
+
     if recep_info == []:
-        ctx.send("Given user does not have a wallet created")
-    if donor_info == []:
-        ctx.send("You do not have a wallet created")
-
-    addressA = donor_info[1]
-    pkeyA = donor_info[2]
-    addressB = recep_info[1]
-    user_txn = n.create_txn(addressA,addressB,val)
-    reciept = n.sign_txn(pkeyA,user_txn)
-    await ctx.send(f"Transaction reciept: {reciept}")
-    #await ctx.send(f'{user.id}, {arg1},{arg2}')
-
+        await ctx.send("Given user does not have a wallet created")
+    elif donor_info == []:
+        await ctx.send("You do not have a wallet created")
+    else:
+        addressA = donor_info[0][1]
+        pkeyA = donor_info[0][2]
+        addressB = recep_info[0][1]
+        user_txn = n.create_txn(addressA,addressB,val)
+        reciept = n.sign_txn(pkeyA,user_txn)
+        await ctx.send(f"Transaction reciept: https://polygonscan.com/tx/{reciept}")
 
 @client.command()
 async def user(ctx):
@@ -95,4 +99,17 @@ async def get_uid(ctx, *, user: discord.User=None):
     else:
         await ctx.send('user not found')
 
-client.run('ODU1MjI1MDUzMDIwNTUzMjM2.YMvYZQ.VaBz5KJ2bn4-ignx0ilGJgdK17k')
+@client.command(name='make-wallet')
+async def make(ctx,*,user: discord.User=None):
+    if ctx.author.id == 340751508138229762:
+        acc = S.create_account()
+        if S.fetch_user(user.id) == []:
+            S.add_user(user.id,acc.address,S.to_hex(acc.privateKey))
+            await ctx.send("your address: "+ str(acc.address))
+        else:
+            await ctx.send("your wallet has already been created")
+    else:
+        await ctx.send("command reserved for admins")
+
+
+client.run(p.bot_id)
