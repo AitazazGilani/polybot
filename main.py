@@ -40,33 +40,41 @@ async def generate(ctx):
 #!send value ticker @username
 @client.command()
 async def send(ctx,arg1,arg2,*,user: discord.User=None):
+
+    if S.check_user(user.id) == False:
+        await ctx.send("Given user does not have a wallet created")
+        return
+    if S.check_user(ctx.author.id) == False:
+        await ctx.send("You do not have a wallet created")
+        return
+
     val, ticker, recipient = arg1, arg2, user.id
-
     try:
-        val = int(val)
+        val = float(val)
     except:
-        await ctx.send("invalid amount given")
+        await ctx.send("Invalid amount given")
+        return
+    ticker = ticker.upper()
 
-    if  ticker.upper() != "COOM":
-        ctx.send("invalid ticker")
+    recep_info = S.fetch_user(recipient)[0]
+    donor_info = S.fetch_user(ctx.author.id)[0]
+
+    addressA, privA = donor_info[1], donor_info[2]
+    addressB = recep_info[1]
+    if (ticker == "COOM"):
+        c = True
+    elif (ticker == "MATIC"):
+        c = False
     else:
-        if S.check_user(user.id) == False:
-            await ctx.send("Given user does not have a wallet created")
-        elif S.check_user(ctx.author.id) == False:
-            await ctx.send("You do not have a wallet created")
-        else:
-            recep_info = S.fetch_user(recipient)[0]
-            donor_info = S.fetch_user(ctx.author.id)[0]
+        await ctx.send(f"Invalid ticker: {ticker}")
+        return
 
-            addressA, privA = donor_info[1], donor_info[2]
-            addressB = recep_info[1]
+    reciept = n.pass_contract_txn(privA,addressA,addressB,val,contract=c)
 
-            reciept = n.pass_contract_txn(privA,addressA,addressB,val)
-
-            if (reciept[0] == True):
-                await ctx.send(f"Transaction reciept: https://polygonscan.com/tx/{reciept[1]}")
-            else:
-                await ctx.send(f"Transaction failed: {reciept[1]}")
+    if (reciept[0] == True):
+        await ctx.send(f"Transaction reciept: https://polygonscan.com/tx/{reciept[1]}")
+    else:
+        await ctx.send(f"Transaction failed: {reciept[1]}")
 
 @client.command()
 async def user(ctx):
