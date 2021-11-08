@@ -36,29 +36,6 @@ async def generate(ctx):
     else:
         await ctx.send("your wallet has already been created")
 
-@client.command()
-async def get(ctx,*args):
-    user = S.fetch_user(ctx.author.id)[0]  # holds uid,wallet address, privkey
-
-    check = S.check_user(ctx.author.id)  # check if wallet exists correct
-
-    if args[0] == 'balance':
-        if check == False:
-            await ctx.send("You do not have any active wallets")
-        else:
-            balance = n.get_bal(user[1])
-            await ctx.send('<:coomer:881353486296580176> {} {}'.format(balance[1],p.contract_ticker)
-                           +'\n<:polygon:906994678367391754> {} {}'.format(balance[0], p.native_ticker))
-
-
-    elif (args[0] == 'address'):
-        if check == True:
-            await ctx.send("Your address: "+ str(user[1]))
-        else:
-            await ctx.send("You do not have any active wallets")
-
-
-
 
 #!send value ticker @username
 @client.command()
@@ -116,12 +93,49 @@ async def make(ctx,*,user: discord.User=None):
 
 @client.command()
 async def help(ctx):
-    await ctx.send("```Commands:\n!ping, replies with pong!\n"
+    await ctx.send("```Commands:\n"
+                   "!ping, replies with pong!\n"
                    "!web3 status, checks if connection to the node is working\n"
-                   "!generate, creates an Ethereum wallet for the user who calls the command and stores it\n"
-                   "!get balance, get the balance of the contracts token for that user\n"
-                   "!get address, gets the users current Ethereum address\n"
+                   "!generate, creates an Ethereum wallet\n"
+                   "!balance, get the balance of the contracts token for that user\n"
+                   "!address, gets the users current Ethereum address\n"
                    "!send <value> <ticker> @username, send a person an X amount of tokens from your wallet\n"
                    "!help, replies with this text```")
 
+@client.command()
+async def balance(ctx):
+    user = S.fetch_user(ctx.author.id)[0]  # holds uid,wallet address, privkey
+
+    check = S.check_user(ctx.author.id)  # check if wallet exists correct
+
+    if check == False:
+        await ctx.send("You do not have any active wallets")
+    else:
+        embed = discord.Embed(
+            title="Balance",
+            description=ctx.author.mention,
+            color = discord.Color.orange()
+        )
+        embed.add_field(name="Polygon", value=str(n.get_bal(user[1])[0])+"  <:polygon:906994678367391754>",inline=False)
+        embed.add_field(name = "CumDogeElonPussyShit coin", value = str(n.get_bal(user[1])[1])+"  <:coomer:881353486296580176>")
+        embed.set_thumbnail(url = ctx.author.avatar_url)
+        await ctx.send(embed=embed)
+
+@client.command()
+async def address(ctx):
+    user = S.fetch_user(ctx.author.id)[0]  # holds uid,wallet address, privkey
+
+    check = S.check_user(ctx.author.id)  # check if wallet exists
+    if check == False:
+        await ctx.send("You do not have any active wallets")
+    else:
+        embed = discord.Embed(
+            title="Address",
+            description=ctx.author.mention,
+            color=discord.Color.orange()
+        )
+        embed.add_field(name="Ethereum address", value=user[1])
+
+        embed.set_thumbnail(url=ctx.author.avatar_url)
+        await ctx.send(embed=embed)
 client.run(p.bot_id)
