@@ -2,7 +2,7 @@
 from web3 import Web3
 import parse_settings as p
 
-
+#establish connection to web3 and contract
 web3 = Web3(Web3.HTTPProvider(p.rpc))
 contract = web3.eth.contract(address=p.contract_addr,abi=p.abi)
 
@@ -24,9 +24,9 @@ def check_addr(addr):
 
 def get_bal(addr):
     '''
-    get the balance of the address in wei
+    get the balances of the address
     :addr: a string, containing a valid eth address
-    :return: a float
+    :return: a tuple, containging native blockchain token balance and contract token balance
     '''
 
     native_bal_raw = web3.eth.getBalance(addr)
@@ -37,6 +37,13 @@ def get_bal(addr):
     return native_balance,contract_balance
 
 def estimate_gas(unsigned_txn,sender,contract=False):
+    '''
+    Estimate how much gas will be used in a particular transaction
+    :param unsigned_txn: Dictionary containing all the information about transaction
+    :param sender: eth address of the sender, String
+    :param contract: tells whether if we're are estimating gas for a txn that uses a contract
+    :return: estimated gas usage for the txn in Wei, int
+    '''
     if contract == True:
         data = unsigned_txn['data']
         gas = web3.eth.estimateGas({
@@ -50,6 +57,13 @@ def estimate_gas(unsigned_txn,sender,contract=False):
     return gas
 
 def create_native_txn(sender,recipient,amount):
+    '''
+    Create an unsigned txn for a native token transaction
+    :param sender: senders eth address, string
+    :param recipient: recipeients eth address, string
+    :param amount: amount being transacted, float
+    :return: a dictionary, containing information about txn
+    '''
     tx = {
         'chainId': web3.eth.chainId,
         'nonce': web3.eth.getTransactionCount(sender),
@@ -65,6 +79,7 @@ def create_contract_txn(sender, recipient, amount):
     :sender: String, is the address of the sender
     :recipient: String, is the address of the recipient
     :amount: int, amount of the erc20 token (contract) you are sending
+    :return: a dictionary
     '''
 
     nonce = web3.eth.get_transaction_count(sender)
@@ -91,7 +106,9 @@ def create_contract_txn(sender, recipient, amount):
     return contract_txn
 
 def sign_txn(priv_key, unsigned_txn):
-
+    '''
+    Sign a transaction
+    '''
     signed_txn = web3.eth.account.sign_transaction(unsigned_txn,private_key=priv_key)
     hashed_txn = web3.eth.send_raw_transaction(signed_txn.rawTransaction)
     return web3.toHex(hashed_txn)

@@ -19,6 +19,9 @@ async def ping(ctx):
 
 @client.command()
 async def web3(ctx,arg):
+    '''
+    check if web3 connection is live
+    '''
     if arg == 'status':
         test = n.test_connection()
         if test == True:
@@ -29,6 +32,9 @@ async def web3(ctx,arg):
 
 @client.command()
 async def generate(ctx):
+    '''
+    Create a wallet for the user who calls the command
+    '''
     acc = S.create_account()
     if S.fetch_user(ctx.author.id) == []:
         S.add_user(ctx.author.id,acc.address,S.to_hex(acc.privateKey))
@@ -40,10 +46,15 @@ async def generate(ctx):
 #!send value ticker @username
 @client.command()
 async def send(ctx,arg1,arg2,*,user: discord.User=None):
-
+    '''
+    Pass a transaction, shows whether if it passed or failed in an embed
+    call example: !send value ticker @username
+    '''
+    #check if user exists in the db
     if S.check_user(user.id) == False:
         await ctx.send("Given user does not have a wallet created")
         return
+
     if S.check_user(ctx.author.id) == False:
         await ctx.send("You do not have a wallet created")
         return
@@ -54,14 +65,16 @@ async def send(ctx,arg1,arg2,*,user: discord.User=None):
     except:
         await ctx.send("Invalid amount given")
         return
-    ticker = ticker.upper()
 
+    ticker = ticker.upper()
     recep_info = S.fetch_user(recipient)[0]
     donor_info = S.fetch_user(ctx.author.id)[0]
 
     addressA, privA = donor_info[1], donor_info[2]
     addressB = recep_info[1]
-    if (ticker == "COOM"):
+
+    #sending from addressA --> addressB
+    if (ticker == "COOM"):  #If a contract token is being asked for a txn
         c = True
     elif (ticker == "MATIC"):
         c = False
@@ -71,7 +84,7 @@ async def send(ctx,arg1,arg2,*,user: discord.User=None):
 
     reciept = n.pass_contract_txn(privA,addressA,addressB,val,contract=c)
 
-    if (reciept[0] == True):
+    if (reciept[0] == True):    #Txn was successful
 
         embed = discord.Embed(
             title="Transaction Successful",
@@ -83,7 +96,8 @@ async def send(ctx,arg1,arg2,*,user: discord.User=None):
                         inline=False)
 
         await ctx.send(embed=embed)
-    else:
+
+    else:       #txn failed
         embed = discord.Embed(
             title="Transaction Failed",
             description=f"Could not sent {val} {ticker} to {user.mention}",
@@ -93,12 +107,12 @@ async def send(ctx,arg1,arg2,*,user: discord.User=None):
                         inline=False)
         await ctx.send(embed=embed)
 
-@client.command()
-async def user(ctx):
-    await ctx.send(ctx.author.id)
 
 @client.command(name='get-uid')
 async def get_uid(ctx, *, user: discord.User=None):
+    '''
+    get a persons uid
+    '''
     if user != None:
         await ctx.send(f'{user.id}')
     else:
@@ -112,7 +126,7 @@ async def make(ctx,*,user: discord.User=None):
             S.add_user(user.id,acc.address,S.to_hex(acc.privateKey))
             await ctx.send("your address: "+ str(acc.address))
         else:
-            await ctx.send("your wallet has already been created")
+            await ctx.send("wallet has already been created")
     else:
         await ctx.send("command reserved for admins")
 
@@ -129,7 +143,7 @@ async def help(ctx):
 
 @client.command()
 async def balance(ctx):
-    user = S.fetch_user(ctx.author.id)[0]  # holds uid,wallet address, privkey
+    user = S.fetch_user(ctx.author.id)[0]  # holds (uid,wallet address,privkey)
 
     check = S.check_user(ctx.author.id)  # check if wallet exists correct
 
