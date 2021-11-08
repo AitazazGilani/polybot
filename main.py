@@ -72,9 +72,26 @@ async def send(ctx,arg1,arg2,*,user: discord.User=None):
     reciept = n.pass_contract_txn(privA,addressA,addressB,val,contract=c)
 
     if (reciept[0] == True):
-        await ctx.send(f"Transaction reciept: https://polygonscan.com/tx/{reciept[1]}")
+
+        embed = discord.Embed(
+            title="Transaction Successful",
+            description=f"{ctx.author.mention} sent {val} {ticker} to {user.mention}",
+            color=discord.Color.green()
+        )
+
+        embed.add_field(name="Reciept", value=f"https://polygonscan.com/tx/{reciept[1]}",
+                        inline=False)
+
+        await ctx.send(embed=embed)
     else:
-        await ctx.send(f"Transaction failed: {reciept[1]}")
+        embed = discord.Embed(
+            title="Transaction Failed",
+            description=f"Could not sent {val} {ticker} to {user.mention}",
+            color=discord.Color.red()
+        )
+        embed.add_field(name="Reason", value=f"{reciept[1]}",
+                        inline=False)
+        await ctx.send(embed=embed)
 
 @client.command()
 async def user(ctx):
